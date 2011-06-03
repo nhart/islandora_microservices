@@ -15,7 +15,7 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(name='fedora_micro_services',
-      version='0.1',
+      version='11.1.0',
       description='Fedora Stomp Listener',
       author='Alexander O''Neill',
       author_email='aoneill@upei.ca',
