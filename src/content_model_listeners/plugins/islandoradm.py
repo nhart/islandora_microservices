@@ -119,27 +119,30 @@ class IslandoraDM(FedoraMicroService):
     content_model = "islandora-dm:cmodel-page"
     def runRules(self, obj, dsid, body):
         logging.info("pid:" + obj.pid + ", dsid:" + dsid)
+   
+        try:
+            # is this a reschedule request?
+            if dsid == '' and body.find('reschedule import') >= 0:
+                dsid = 'tiff'
 
-        # is this a reschedule request?
-        if dsid == '' and body.find('reschedule import') >= 0:
-            dsid = 'tiff'
+            if dsid == 'tiff':
+                cwd = os.getcwd()
 
-        if dsid == 'tiff':
-            try:
                 tmpdir, tiff_file = get_datastream_as_file(obj, dsid, 'tiff')
             
-                cwd = os.getcwd()
                 os.chdir(tmpdir)
                         
                 run_conversions(obj, tmpdir, tiff_file) and update_fedora(obj, tmpdir)
                 
                 rmtree(tmpdir, ignore_errors=True)
-            except Exception as e:
-                logging.error("an exception occurred: " + str(e))
                 
-            os.chdir(cwd)
-        else:
-            logging.debug("ignoring dsid: " + dsid)
+                os.chdir(cwd)
+            else:
+                logging.debug("ignoring dsid: " + dsid)
+
+
+        except Exception as e:
+            logging.error("an exception occurred: " + str(e))
 
     def __init__(self):
         '''
