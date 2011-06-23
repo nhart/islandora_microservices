@@ -18,6 +18,17 @@ convert = '/usr/bin/convert'
 def sysout(msg, end='\n'):
     sys.stdout.write(str(msg) + end)
 
+def e2s(e):
+    s = 'unknown exception'
+
+    try:
+        s = str(e)
+    
+    except Exception as e2:
+        logging.error('an exception occurred converting another exception to a string')
+    
+    return s
+
 def make_jp2(tiff_file):
     logging.debug([kdu_compress, "-i", tiff_file, "-o", "tmp.jp2", "-rate", "0.5", "Clayers=1", "Clevels=7", "Cprecincts={256,256},{256,256},{256,256},{128,128},{128,128},{64,64},{64,64},{32,32},{16,16}", "Corder=RPCL", "ORGgen_plt=yes", "ORGtparts=R", "Cblk={32,32}", "Cuse_sop=yes"])
 
@@ -77,7 +88,7 @@ def update_fedora(obj, tmpdir):
     try:
         del obj['tiff']
     except Exception as e:
-        logging.error("error removing tiff datastream from pid " + obj.pid + " - " + str(e))
+        logging.error("error removing tiff datastream from pid " + obj.pid + " - " + e2s(e))
         return False
     
     return True
@@ -98,7 +109,7 @@ def update_fedora_relsext(obj):
 
         ds.setContent(updated_xml_string)
     except Exception as e:
-        logging.error("exception: " + str(e))
+        logging.error("exception: " + e2s(e))
         return False
         
     return True
@@ -142,7 +153,7 @@ class IslandoraDM(FedoraMicroService):
 
 
         except Exception as e:
-            logging.error("an exception occurred: " + str(e))
+            logging.error("an exception occurred: " + e2s(e))
 
     def __init__(self):
         '''
