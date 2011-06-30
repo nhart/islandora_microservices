@@ -129,9 +129,11 @@ class IslandoraDM(FedoraMicroService):
     name = "Islandora DM Plugin"
     content_model = "islandora-dm:cmodel-page"
     def runRules(self, obj, dsid, body):
-        logging.info("pid:" + obj.pid + ", dsid:" + dsid)
-   
+        logging.debug('runRules start')
+
         try:
+            logging.info("pid:" + obj.pid + ", dsid:" + dsid)
+
             # is this a reschedule request?
             if dsid == '' and body.find('reschedule import') >= 0:
                 dsid = 'tiff'
@@ -152,8 +154,11 @@ class IslandoraDM(FedoraMicroService):
                 logging.debug("ignoring dsid: " + dsid)
 
 
-        except Exception as e:
-            logging.error("an exception occurred: " + e2s(e))
+        # lets try catching anything, anything at all
+        except:
+            logging.error("an exception occurred: " + str(sys.exc_info()[0]))
+
+        logging.debug('runRules end')
 
     def __init__(self):
         '''

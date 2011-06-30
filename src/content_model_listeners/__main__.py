@@ -93,19 +93,26 @@ class ContentModelListener(ConnectionListener):
         """
         \see ConnectionListener::on_message
         """ 
-        global TOPIC_PREFIX
-        self.__print_async('MESSAGE', headers, body)
-        pid = headers['pid']
-        dsid = headers['dsid']
+
         try:
+            global TOPIC_PREFIX
+            self.__print_async('MESSAGE', headers, body)
+            pid = headers['pid']
+            dsid = headers['dsid']
+            
             obj = self.client.getObject(pid)
             content_model = headers['destination'][len(TOPIC_PREFIX):]
             if content_model in self.contentModels:
                 logging.info('Running rules for %(pid)s from %(cmodel)s.' % {'pid': obj.pid, 'cmodel': content_model} )
                 for plugin in self.contentModels[content_model]: 
-                   plugin.runRules(obj, dsid, body)
+                    plugin.runRules(obj, dsid, body)
+
         except FedoraConnectionException:
             logging.warning('Object %s was not found.' % (pid))
+
+        except:
+            logging.error("an exception occurred: " + str(sys.exc_info()[0]))
+
 
     def on_error(self, headers, body):
         """
