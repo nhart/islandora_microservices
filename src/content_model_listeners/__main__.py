@@ -111,7 +111,7 @@ class ContentModelListener(ConnectionListener):
             logging.warning('Object %s was not found.' % (pid))
 
         except:
-            logging.error("an exception occurred: " + str(sys.exc_info()[0]))
+            logging.exception("an exception occurred")
 
 
     def on_error(self, headers, body):

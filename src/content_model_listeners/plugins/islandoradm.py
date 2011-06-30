@@ -156,7 +156,7 @@ class IslandoraDM(FedoraMicroService):
 
         # lets try catching anything, anything at all
         except:
-            logging.error("an exception occurred: " + str(sys.exc_info()[0]))
+            logging.exception("exception in runRules")
 
         logging.debug('runRules end')
 

@@ -32,15 +32,20 @@ def update_datastream(obj, dsid, filename, label='', mimeType='', controlGroup='
 
     try:
         logging.debug("using curl to update object %(obj)s, datastream %(dsid)s, from file %(file)s" % {'obj': obj, 'dsid': dsid, 'file': filename})
-        r = subprocess.call(['curl', '-i', '-H', '-XPOST', '%(url)s/objects/%(pid)s/datastreams/%(dsid)s?dsLabel=%(label)s&mimeType=%(mimetype)s&controlGroup=%(controlgroup)s'
+        # this is a python 2.7 only function, so we shouldn't let this make it into the main sources
+        # as everything else works on 2.6, but its very handy in this case.
+        subprocess.check_output(['curl', '-i', '-H', '-XPOST', '%(url)s/objects/%(pid)s/datastreams/%(dsid)s?dsLabel=%(label)s&mimeType=%(mimetype)s&controlGroup=%(controlgroup)s'
                            % {'url': conn.url, 'pid': obj.pid, 'dsid': dsid, 'label': quote(label), 'mimetype': mimeType, 'controlgroup': controlGroup }, 
-                           '-F', 'file=@%(filename)s' % {'filename': filename}, '-u', '%(username)s:%(password)s' % {'username': conn.username, 'password': conn.password}])
-    
-        if not r == 0:
-            logging.error("error in curl code %(code)s" % {'code': r})
-
-    except Exception as e:
-        logging.error('exception in curl call: ' + str(e))
+                           '-F', 'file=@%(filename)s' % {'filename': filename}, '-u', '%(username)s:%(password)s' % {'username': conn.username, 'password': conn.password}],
+                           stderr=subprocess.STDOUT)
+        r = 0
+    except subprocess.CalledProcessError as e:
+        logging.error('exception in curl call: ')
+        logging.error(e.output)
+        logging.error(str(e))
+        r = 1
+    except:
+        logging.exception('exception in curl call')
         r = 1
     
     return r == 0
