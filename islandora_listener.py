@@ -174,8 +174,15 @@ class IslandoraListener(ConnectionListener):
             # try to get fedora object, it could not exist
             try:
                 obj = self.client.getObject(pid)
-            except FedoraConnectionException:
-                obj = None
+                logger.debug('Got object with PID: %s', pid)
+            except FedoraConnectionException as e:
+                if e.httpcode == 404: #The object doesn't exist in Fedora.
+                    obj = None
+                    logger.debug('Object with PID "%s" not found in Fedora.', pid)
+                else:
+                    #TODO: May want to do some other error handling, or possibly raise the exception again?
+                    obj = None
+                    logger.debug('Object with PID "%s" could not be accessed for some reason...', pid)
 
             content_models = self._get_fedora_content_models(obj)
 
