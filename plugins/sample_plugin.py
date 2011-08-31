@@ -1,7 +1,7 @@
 
 from plugin_manager import IslandoraListenerPlugin
 
-class coalliance(IslandoraListenerPlugin):
+class sample_plugin(IslandoraListenerPlugin):
 
     def fedoraMessage(self, message, obj, client):
         print message
