@@ -97,22 +97,25 @@ class IslandoraListener(ConnectionListener):
     def _process_fedora_message(self, message):
         etree = ElementTree.ElementTree()
         root = ElementTree.XML(message)
-        ds = {}
+        ds = dict()
 
-        ATOM_NS = "{http://www.w3.org/2005/Atom}"
-        FEDORA_NS = "{http://www.fedora.info/definitions/1/0/types/}"
+        NSs = {
+            'atom_ns': "{http://www.w3.org/2005/Atom}",
+            'fedora_ns': "{http://www.fedora.info/definitions/1/0/types/}"
+        }
+
         FEDORA_VERSION = 'info:fedora/fedora-system:def/view#version'
 
-        ds['id'] = root.find(ATOM_NS+'id').text
-        updated = root.find(ATOM_NS+'updated').text
+        ds['id'] = root.findtext('%(atom_ns)sid' % NSs)
+        updated = root.findtext('%(atom_ns)supdated' % NSs)
         ds['updated'] = datetime.strptime(updated, '%Y-%m-%dT%H:%M:%S.%fZ')
-        ds['author'] = root.find(ATOM_NS+'author/'+ATOM_NS+'name').text
-        ds['uri'] = root.find(ATOM_NS+'author/'+ATOM_NS+'uri').text
-        ds['method'] = root.find(ATOM_NS+'title').text
+        ds['author'] = root.findtext('%(atom_ns)sauthor/%(atom_ns)sname' % NSs)
+        ds['uri'] = root.findtext('%(atom_ns)sauthor/%(atom_ns)suri' % NSs)
+        ds['method'] = root.findtext('%(atom_ns)stitle' % NSs)
         ds['args'] = []
         ds['dsid'] = None
 
-        for arg in root.findall(ATOM_NS+'category'):
+        for arg in root.findall('%(atom_ns)scategory' % NSs):
             scheme = arg.get('scheme').split(':',1)
             if scheme[0] == 'fedora-types':
                 r = {}
@@ -125,13 +128,10 @@ class IslandoraListener(ConnectionListener):
             elif scheme[0] == FEDORA_VERSION:
                 ds['fedora_version'] = arg.get('term')
 
-        pid = root.find(ATOM_NS+'summary')
-        if pid == None:
-            ds['pid'] = None
-        else:
-            ds['pid'] = pid.text
-
-        ds['return'] = root.find(ATOM_NS+'content').text
+        #A little more concise version, instead of the five lines which did this...
+        ds['pid'] = root.findtext('%(atom_ns)ssummary' % NSs, None)
+        
+        ds['return'] = root.findtext('%(atom_ns)scontent' % NSs)
 
         return ds
 
@@ -180,7 +180,7 @@ class IslandoraListener(ConnectionListener):
                     obj = None
                     logger.debug('Object with PID "%s" not found in Fedora.', pid)
                 else:
-                    #TODO: May want to do some other error handling, or possibly raise the exception again?
+                    #TODO: May want to do some other error handling (handle different error codes differently)?...  Or, to pass along the httpcode to the plugin somehow, and let it sort it out?
                     obj = None
                     logger.debug('Object with PID "%s" could not be accessed for some reason...', pid)
 
