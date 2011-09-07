@@ -4,7 +4,7 @@ Created on March 5, 2011
 @author: jonathangreen
 '''
 
-import coalliance_conversion as CC
+from islandoraUtils import DSConverter as CC
 import string
 
 tn_postfix = '-tn.jpg'

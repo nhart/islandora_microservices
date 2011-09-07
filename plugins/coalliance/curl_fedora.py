@@ -13,15 +13,14 @@ def get_datastream_as_file(obj, dsid, extension = ''):
     tries = 10
     filename = '%(dir)s/content.%(ext)s' % {'dir': d, 'ext': extension}
     while not success and tries > 0:
-        f =open(filename, 'w')
-        f.write(obj[dsid].getContent().read())
-        os.fsync(f.fileno())
-        f.close()
-        logging.debug("Size of datastream: %(size)d. Size on disk: %(size_disk)d." % {'size': obj[dsid].size, 'size_disk': os.path.getsize(filename)})
-        if os.path.getsize(filename) != obj[dsid].size:
-            tries = tries - 1
-        else:
-            success = True
+        with open(filename, 'w') as f:
+            f.write(obj[dsid].getContent().read())
+            f.flush() #Flushing should be enough...  Shouldn't actually have to sync the filesystem.  Caching would actually be a good thing, yeah?
+            logging.debug("Size of datastream: %(size)d. Size on disk: %(size_disk)d." % {'size': obj[dsid].size, 'size_disk': os.path.getsize(filename)})
+            if os.path.getsize(filename) != obj[dsid].size:
+                tries = tries - 1
+            else:
+                success = True
     return d, 'content.'+extension
 
 def update_datastream(obj, dsid, filename, label='', mimeType='', controlGroup='M'): 

@@ -13,26 +13,26 @@
 
 PROG="Islandora Microservices"
 PYTHON=/usr/bin/python
-MICROSERVICES_PATH=/opt/islandora_microservices
+MICROSERVICES_PATH=/mnt/fjm_obj/lib/fedora_microservices
 CONFIG_FILE=$MICROSERVICES_PATH/islandora_microservices.cfg
-
+LOCK_FILE=/var/lock/islandora_microservices
 # *** Please make sure you change the fedora user to reflect the local setup. ***
 
-FEDORA_USER=fedora
+FEDORA_USER=root
 
 start () {
 	echo -n "Starting $PROG: "
 	# check to see if the process is already running
-	if [ -f /var/lock/jms ]; then
+	if [ -f $LOCK_FILE ]; then
 		echo "$PROG is already running"
 	else
 			# start JMS as the fedora user
-			su - $FEDORA_USER -c "$PYTHON $MICROSERVICES_PATH/islandora_listener.py -C $CONFIG_FILE &" >/dev/null 2>&1
+			sudo -u $FEDORA_USER /usr/bin/env PYTHONPATH=/mnt/fjm_obj/lib/IslandoraPYUtil $PYTHON $MICROSERVICES_PATH/islandora_listener.py -C $CONFIG_FILE & #> /dev/null #2>&1
 			sleep 3
 			ps -ef | grep 'islandora_listener' | grep -v 'grep' >/dev/null 2>&1
 			RETVAL=$?
 			if [ $RETVAL = 0 ]; then
-				touch /var/lock/islandora_microservices
+				touch $LOCK_FILE
 				echo "                                          [ \033[0;32m OK\033[0;39m""  ]"
 			else
 				echo "                                          [ \033[0;31m FAILED\033[0;39m""  ]"
@@ -44,14 +44,14 @@ stop () {
 	# stop daemon
 	echo -n "Stopping $PROG: "
 	# check to see if the process is running
-	if [ ! -f /var/lock/islandora_microservices ]; then
+	if [ ! -f $LOCK_FILE ]; then
 		echo "$PROG is not running"
 	else
 		# use kill -2 to stop JMS.
-		kill `ps -ef | grep islandora_listener | grep -v grep | awk '{print $2}'` &>/dev/null
+		sudo -u $FEDORA_USER kill `ps -ef | grep islandora_listener | grep -v grep | awk '{print $2}'` &>/dev/null
 		RETVAL=$?
 		echo "                                          [ \033[0;32m OK\033[0;39m""  ]"
-		[ $RETVAL = 0 ] && rm -f /var/lock/jms
+		[ $RETVAL = 0 ] && rm -f $LOCK_FILE
 	fi
 }
 
@@ -71,7 +71,7 @@ case $1 in
 		restart
 	;;
 	status)
-		if [ -f /var/lock/jms ]; then
+		if [ -f $LOCK_FILE ]; then
 			echo "$PROG (pid `ps -ef | grep 'fedora_listener' | grep -v 'grep' | awk '{print $2}'`) is running..."
 		else
 			echo "$PROG has not been started."
