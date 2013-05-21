@@ -9,6 +9,7 @@ from plugin_manager import IslandoraListenerPlugin
 from fcrepo.connection import FedoraConnectionException
 from coalliance_mime import CoallianceMime
 from islandoraUtils.metadata.fedora_relationships import rels_int, rels_namespace, rels_object
+from islandoraUtils import DSConverter as DSC
 import coalliance_metadata
 import json
 import re
@@ -20,6 +21,7 @@ class coalliance(IslandoraListenerPlugin):
             # do actions based on DSID then on MIME
             if dsid == 'MODS':
                 coalliance_metadata.add_handle_to_mods(obj)
+                DSC.mods_to_dc(obj, 'MODS', 'DC')
             elif dsid == 'TN':
                 pass
             elif dsid == 'POLICY':
