@@ -46,7 +46,7 @@ class coalliance(IslandoraListenerPlugin):
                     parent_pid = relationship[0][2]
                     parent_obj = client.getObject(parent_pid)
                     if parent_obj:
-                        if 'CHILD_SECURITY' in parent_obj and 'CHILD_SECURITY' not in 'obj':
+                        if 'CHILD_SECURITY' in parent_obj and 'POLICY' not in 'obj':
                             child_policy = parent_obj['CHILD_SECURITY']
                             policy_xml = child_policy.getContent().read()
                             obj.addDataStream('POLICY', policy_xml, controlGroup=u'M', label=u'Xacml Policy Stream', mimeType=u'text/xml', logMessage=u'Microservices added child policy to object')
