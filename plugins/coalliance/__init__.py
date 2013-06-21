@@ -4,7 +4,7 @@ Created on March 5, 2011
 @author: jonathangreen
 '''
 
-from islandoraUtils.metadata.fedora_relationships import rels_int, rels_namespace
+from islandoraUtils.metadata.fedora_relationships import rels_int, rels_namespace, rels_ext
 from plugin_manager import IslandoraListenerPlugin
 from fcrepo.connection import FedoraConnectionException
 from coalliance_mime import CoallianceMime
@@ -38,6 +38,22 @@ class coalliance(IslandoraListenerPlugin):
         if message['method'] == 'ingest':
             for dsid in obj:
                 self.processMessage(dsid, obj, comime)
+            #copy parent child policy to object being ingested
+            try:
+                relsext = rels_ext(obj, rels_namespace('fedora', 'info:fedora/fedora-system:def/relations-external#'), 'fedora')
+                relationship = relsext.getRelationships('isMemberOfCollection')
+                if relationship:
+                    parent_pid = relationship[0][2]
+                    parent_obj = client.getObject(parent_pid)
+                    if parent_obj:
+                        if 'CHILD_SECURITY' in parent_obj and 'CHILD_SECURITY' not in 'obj':
+                            child_policy = parent_obj['CHILD_SECURITY']
+                            policy_xml = child_policy.getContent().read()
+                            obj.addDataStream('POLICY', policy_xml, controlGroup=u'M', label=u'Xacml Policy Stream', mimeType=u'text/xml', logMessage=u'Microservices added child policy to object')
+                            self.logger.info('Copy CHILD_SECURITY datastream from parent. Pid %s' % message['pid'])
+            except:
+                pass
+                self.logger.error('Can not copy CHILD_SECURITY datastream from parent. Pid %s' % message['pid'])
         # clean up the rels if this was a purge
         elif message['method'] == 'purgeDatastream':
             relsint = rels_int(obj, rels_namespace('coal', 'http://www.coalliance.org/ontologies/relsint'), 'coal')
