@@ -77,7 +77,7 @@ class CoallianceMime():
             return True
         else:
             return False
-
+    
     # meta functions called by multiple mime functions
     def video_derivative(self, source):
         self.create_derivative('hasMP4', '-' + source + '.dip.mp4', DSC.create_mp4)
